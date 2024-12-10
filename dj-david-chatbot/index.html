@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusion 2 Radio</title>
+    <style>
+        body {
+            background: linear-gradient(45deg, #1a1a1a, #4a4a4a);
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .info-section {
+            background: rgba(0,0,0,0.5);
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto 20px;
+            cursor: pointer;
+        }
+        .info-content {
+            display: none;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        .info-content.show {
+            display: block;
+        }
+        .info-section h2, .info-section h3 {
+            color: #00ff00;
+            margin-top: 20px;
+        }
+        .info-section p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .toggle-info {
+            color: #00ff00;
+            cursor: pointer;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .toggle-info:hover {
+            background: rgba(0,255,0,0.1);
+        }
+        .contact-button {
+            display: block;
+            background: #00ff00;
+            color: #000;
+            text-decoration: none;
+            text-align: center;
+            padding: 6px 12px;
+            border-radius: 4px;
+            margin: 10px auto;
+            max-width: 150px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .contact-button:hover {
+            background: #00cc00;
+        }
+        .listen-button {
+            display: block;
+            background: #6441a5;  /* Twitch purple */
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+            padding: 6px 12px;
+            border-radius: 4px;
+            margin: 10px auto;
+            max-width: 150px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .listen-button:hover {
+            background: #7d5bbe;
+        }
+        .join-button {
+            display: block;
+            background: #ff4081;  /* Vibrant pink */
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+            padding: 6px 12px;
+            border-radius: 4px;
+            margin: 10px auto;
+            max-width: 150px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .join-button:hover {
+            background: #ff679a;
+        }
+        .dj-console {
+            position: relative;
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 12px;
+            max-width: 400px;
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .disco-lights {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, 
+                #ff0000 0%,
+                #ff7f00 12.5%,
+                #ffff00 25%,
+                #00ff00 37.5%,
+                #0000ff 50%,
+                #4b0082 62.5%,
+                #8b00ff 75%,
+                #ff0000 87.5%,
+                #ff7f00 100%
+            );
+            animation: disco-move 2s linear infinite;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        .disco-ball {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #a0a0a0);
+            border-radius: 50%;
+            box-shadow: 
+                inset -2px -2px 4px rgba(0,0,0,0.4),
+                0 0 10px rgba(255,255,255,0.8);
+            animation: disco-spin 3s linear infinite;
+        }
+        .disco-ball::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(45deg, transparent 45%, #fff 45%, #fff 55%, transparent 55%),
+                linear-gradient(-45deg, transparent 45%, #fff 45%, #fff 55%, transparent 55%);
+            border-radius: 50%;
+            animation: disco-sparkle 1s linear infinite;
+        }
+        @keyframes disco-move {
+            0% { background-position: 0 0; }
+            100% { background-position: 100px 0; }
+        }
+        @keyframes disco-spin {
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) rotate(360deg); }
+        }
+        @keyframes disco-sparkle {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        .chat-display {
+            background: #000;
+            border-radius: 8px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            border: 2px solid #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .vu-meter {
+            background: #333;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 6px 0;
+        }
+        .vu-meter-fill {
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            width: 50%;
+            height: 100%;
+            animation: pulse 2s infinite;
+        }
+        .input-area {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 6px;
+            border: none;
+            border-radius: 4px;
+            background: #333;
+            color: #fff;
+            font-size: 12px;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        .led {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff0000;
+            display: inline-block;
+            margin: 3px;
+            animation: blink 1s infinite;
+        }
+        .dj-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+        .dj-modal h2 {
+            color: #00ff00;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .dj-modal h3 {
+            color: #00ff00;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        .dj-modal p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .dj-modal ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        .dj-modal li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .dj-contact-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        .social-button {
+            display: inline-block;
+            background: #333;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .social-button:hover {
+            background: #444;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .booking-modal, .request-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1001;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+        .booking-modal h2, .request-modal h2 {
+            color: #00ff00;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .booking-modal h3, .request-modal h3 {
+            color: #00ff00;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        .booking-modal p, .request-modal p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #00ff00;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px;
+            line-height: 1;
+        }
+        
+        .modal-close:hover {
+            color: #fff;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+        .welcome-modal {
+            display: flex;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 400px;
+            z-index: 1000;
+            border: 2px solid #00ff00;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .welcome-modal h2 {
+            color: #00ff00;
+            font-size: 14px;
+            margin: 0;
+            text-align: center;
+        }
+        .welcome-modal input {
+            padding: 6px;
+            border: none;
+            border-radius: 4px;
+            background: #333;
+            color: #fff;
+            font-size: 12px;
+            width: 200px;
+            text-align: center;
+        }
+        #chat-interface {
+            display: none;
+        }
+        @keyframes pulse {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        @keyframes blink {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+        h1 {
+            font-size: 16px;
+            margin: 8px 0;
+        }
+        .join-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1000;
+            border: 2px solid #ff4081;
+        }
+        .join-modal h2, .join-modal h3 {
+            color: #ff4081;
+            font-size: 14px;
+            margin-top: 12px;
+        }
+        .join-modal p, .join-modal ul {
+            font-size: 12px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .dj-profiles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .dj-profile {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 250px;
+            text-align: center;
+        }
+        .dj-profile h4 {
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+        .dj-profile p {
+            margin-bottom: 15px;
+        }
+        .dj-specialties {
+            list-style-type: none;
+            padding-left: 0;
+            margin-bottom: 20px;
+        }
+        .dj-specialties li {
+            margin-bottom: 10px;
+        }
+        .contact-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+        .contact-modal h2 {
+            color: #00ff00;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .contact-modal .contact-content {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .contact-modal .email-container {
+            background: rgba(0,255,0,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .contact-modal .email-link {
+            color: #00ff00;
+            text-decoration: none;
+        }
+        .contact-modal .response-note {
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .laser-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        .laser {
+            position: absolute;
+            width: 4px;
+            height: 100%;
+            opacity: 0;
+            transform-origin: top;
+            animation: laser-movement 3s infinite;
+            filter: blur(3px);
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        .laser::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            filter: blur(8px);
+            opacity: 0.4;
+        }
+        
+        .laser:nth-child(1) {
+            left: 20%;
+            animation-delay: 0s;
+            background: linear-gradient(to bottom, 
+                rgba(0,255,0,0) 0%,
+                rgba(0,255,0,0.3) 30%,
+                rgba(0,255,0,1) 50%,
+                rgba(0,255,0,0.3) 70%,
+                rgba(0,255,0,0) 100%
+            );
+            color: #00ff00;
+        }
+        
+        .laser:nth-child(2) {
+            left: 40%;
+            animation-delay: 0.5s;
+            background: linear-gradient(to bottom, 
+                rgba(255,0,255,0) 0%,
+                rgba(255,0,255,0.3) 30%,
+                rgba(255,0,255,1) 50%,
+                rgba(255,0,255,0.3) 70%,
+                rgba(255,0,255,0) 100%
+            );
+            color: #ff00ff;
+        }
+        
+        .laser:nth-child(3) {
+            left: 60%;
+            animation-delay: 1s;
+            background: linear-gradient(to bottom, 
+                rgba(0,255,255,0) 0%,
+                rgba(0,255,255,0.3) 30%,
+                rgba(0,255,255,1) 50%,
+                rgba(0,255,255,0.3) 70%,
+                rgba(0,255,255,0) 100%
+            );
+            color: #00ffff;
+        }
+        
+        .laser:nth-child(4) {
+            left: 80%;
+            animation-delay: 1.5s;
+            background: linear-gradient(to bottom, 
+                rgba(255,255,0,0) 0%,
+                rgba(255,255,0,0.3) 30%,
+                rgba(255,255,0,1) 50%,
+                rgba(255,255,0,0.3) 70%,
+                rgba(255,255,0,0) 100%
+            );
+            color: #ffff00;
+        }
+        
+        @keyframes laser-movement {
+            0% {
+                opacity: 0;
+                transform: translateY(-100%) rotate(45deg) scale(1);
+            }
+            15% {
+                opacity: 0.9;
+                transform: translateY(-30%) rotate(45deg) scale(1.2);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(0%) rotate(45deg) scale(1.5);
+            }
+            45% {
+                opacity: 0.9;
+                transform: translateY(30%) rotate(45deg) scale(1.2);
+            }
+            60% {
+                opacity: 0.7;
+                transform: translateY(60%) rotate(45deg) scale(1);
+            }
+            75% {
+                opacity: 0.5;
+                transform: translateY(100%) rotate(45deg) scale(0.8);
+            }
+            76%, 100% {
+                opacity: 0;
+            }
+        }
+        
+        .glow {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, rgba(0,255,0,0.15) 0%, transparent 60%);
+            animation: glow-pulse 4s infinite;
+            z-index: 0;
+            mix-blend-mode: screen;
+        }
+        
+        @keyframes glow-pulse {
+            0% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.6;
+            }
+            100% {
+                opacity: 0.3;
+            }
+        }
+        
+        /* Make sure content is above effects */
+        #chat-interface {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-modal" id="welcome-screen">
+        <h2>Welcome to Fusion 2 Radio!</h2>
+        <p style="color: #fff; font-size: 12px; text-align: center; margin: 5px 0;">Please enter your name to start chatting with our DJ</p>
+        <input type="text" id="user-name" placeholder="Enter your name" maxlength="20">
+        <button onclick="startChat()">Start Chatting</button>
+    </div>
+
+    <div id="chat-interface">
+        <div class="info-section">
+            <div class="toggle-info" onclick="toggleInfo()">ℹ️ Click to Learn About Fusion 2 Radio</div>
+            <div class="info-content" id="infoContent">
+                <h2>Fusion 2 Radio: Bringing the Beat to Twitch</h2>
+                
+                <p>In the vast ocean of content available on Twitch, one platform has carved out a unique niche that combines music, community, and interactivity—Fusion 2 Radio. This innovative streaming service has redefined the way we consume music online, transforming the traditional radio experience into an immersive digital gathering space.</p>
+
+                <h3>What is Fusion 2 Radio?</h3>
+                <p>Fusion 2 Radio is a live streaming music platform on Twitch that connects music lovers from around the world. With a dynamic lineup of DJs, artists, and producers, it serves as a hub for diverse genres ranging from electronic dance music (EDM) to hip-hop and beyond. The station's mission is to foster an inclusive community where fans of all musical backgrounds can come together, discover new sounds, and enjoy quality live performances.</p>
+
+                <h3>The Unique Twitch Experience</h3>
+                <p>What sets Fusion 2 Radio apart from traditional radio stations is its ability to interact with viewers in real-time. On Twitch, the audience can engage directly with hosts through chat, request songs, and participate in live polls. This level of interaction creates a sense of camaraderie and allows listeners to feel like they're part of the show rather than just passive consumers.</p>
+                
+                <p>Moreover, the Twitch platform allows for high-quality video broadcasts, which enhances the auditory experience. Viewers don't just hear the music; they can see the DJs in action, experience visual effects, and even participate in themed events or live remixes. This visual component adds an exciting layer to the listening experience and brings the community closer together.</p>
+
+                <h3>A Diverse Lineup</h3>
+                <p>Fusion 2 Radio prides itself on showcasing a diverse array of talent. From established artists to emerging DJs, the station features a wide range of performances that keep the content fresh and exciting. The lineup often includes themed nights, collaborative sets, and special guest appearances, ensuring that there's always something new for listeners to enjoy.</p>
+                
+                <p>Additionally, Fusion 2 Radio actively promotes local talent, giving up-and-coming DJs and musicians a platform to reach a broader audience. This commitment to supporting new artists helps to foster a vibrant music culture within the Twitch community, enriching the overall experience for everyone involved.</p>
+
+                <h3>Interactive Events and Collaborations</h3>
+                <p>Fusion 2 Radio has taken the concept of interactivity a step further by hosting themed events, competitions, and collaborations with other Twitch streamers. These events often feature challenges, giveaways, and collaborative performances that engage the audience and encourage participation. Whether it's a dance-off, remix contests, or charity streams, Fusion 2 Radio keeps the energy high and the community engaged.</p>
+                
+                <p>In addition, the station frequently collaborates with charitable organizations, using its platform to raise funds and awareness for various causes. This not only fosters a sense of purpose within the community but also exemplifies the potential of music as a vehicle for positive change.</p>
+
+                <h3>The Future of Fusion 2 Radio</h3>
+                <p>As Fusion 2 Radio continues to grow, its potential for innovation within the music streaming space is limitless. The blend of creativity, community engagement, and technology sets the stage for exciting future developments. With the continued evolution of Twitch and its audience, Fusion 2 Radio is poised to become a staple in the world of digital music experiences.</p>
+
+                <p>In conclusion, Fusion 2 Radio represents a new wave of music consumption that transcends traditional radio. By harnessing the power of Twitch, it creates a vibrant, interactive community for music lovers. With its diverse lineup, commitment to local talent, and engaging events, Fusion 2 Radio is not just a radio station; it's a movement, a celebration of music, and a gathering of like-minded individuals who share a passion for rhythm and sound. For anyone looking to discover new music or connect with fellow fans, tuning in to Fusion 2 Radio is an experience not to be missed.</p>
+            </div>
+        </div>
+
+        <div class="dj-console">
+            <div class="disco-lights"></div>
+            <div class="disco-ball"></div>
+            <h1>📻 FUSION 2 RADIO 🎵</h1>
+            <a href="https://www.twitch.tv/fusion2radio" target="_blank" class="listen-button">🎧 Listen Live on Twitch</a>
+            <a href="mailto:rockmoulds@gmail.com" class="contact-button">📧 Contact Us</a>
+            <a onclick="showJoinModal()" class="join-button">🎯 Join Our Team</a>
+            <div class="led"></div>
+            <div class="led"></div>
+            <div class="led"></div>
+            
+            <div class="vu-meter">
+                <div class="vu-meter-fill"></div>
+            </div>
+            
+            <div class="chat-display" id="chatDisplay">
+                Welcome to Fusion 2 Radio! We're playing the hottest tracks! 🎵
+                Drop a message to request a song or join the conversation...
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <div class="vu-meter">
+                        <div class="vu-meter-fill"></div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="vu-meter">
+                        <div class="vu-meter-fill"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Type your message here..." onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button onclick="sendMessage()">SEND</button>
+            </div>
+        </div>
+
+        <div class="overlay" id="overlay" onclick="closeDJModal()"></div>
+        <div class="dj-modal" id="djModal">
+            <span class="modal-close" onclick="closeDJModal()">×</span>
+            <h2>Connecting with Your Favorite DJs: Fusion 2 Radio's Unique Experience</h2>
+            
+            <p>In the age of digital engagement, music lovers have more opportunities than ever to connect with their favorite artists. Fusion 2 Radio is at the forefront of this movement, creating an interactive platform for listeners to engage with the DJs who curate their favorite sounds.</p>
+
+            <h3>Meet Our Star DJs</h3>
+            <div class="dj-profiles">
+                <div class="dj-profile">
+                    <h4>DJ Micky: The Mix Maestro</h4>
+                    <p>A household name in the local music scene, DJ Micky is renowned for his eclectic taste and immaculate mixing skills. With over a decade of experience, he specializes in:</p>
+                    <ul class="dj-specialties">
+                        <li>House music and EDM</li>
+                        <li>Hip-hop fusion</li>
+                        <li>Classic remixes</li>
+                    </ul>
+                </div>
+
+                <div class="dj-profile">
+                    <h4>DJ iPro: The Innovator</h4>
+                    <p>Known for pushing boundaries and creating unique soundscapes, DJ iPro brings cutting-edge technology to traditional beats. His expertise includes:</p>
+                    <ul class="dj-specialties">
+                        <li>Electronic and dance music</li>
+                        <li>Live remixing</li>
+                        <li>Digital sound production</li>
+                    </ul>
+                </div>
+
+                <div class="dj-profile">
+                    <h4>DJ Fusion: The Heartbeat</h4>
+                    <p>The soul of Fusion 2 Radio, DJ Fusion brings decades of musical knowledge and an uncanny ability to read the crowd. His specialties cover:</p>
+                    <ul class="dj-specialties">
+                        <li>Classic rock to modern hits</li>
+                        <li>Seamless genre transitions</li>
+                        <li>Crowd-pleasing mashups</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>A New Way to Connect</h3>
+            <p>Fusion 2 Radio has always embraced innovation in radio broadcasting, but we are excited to take interaction to the next level. By utilizing FaceTime and various platforms, you can engage in real-time conversations with our DJs. Whether you want to ask them about the latest tracks, seek advice on breaking into the industry, or simply share your love for their mixes, this is your chance!</p>
+
+            <h3>How It Works</h3>
+            <ul>
+                <li><strong>Reach Out via Email:</strong> Interested in setting up a FaceTime call with one of our DJs? It's simple. Use our 'Contact Us' button to send us an email expressing your interest. Whether it's a casual chat, an interview proposal, or a Q&A session, we're eager to hear from you!</li>
+                <li><strong>Join Live Sessions:</strong> Our DJs regularly host live sessions where you can interact with them directly. Whether it's through video chats or Q&A sessions, this is an incredible way to immerse yourself in the world of music alongside the artists you admire.</li>
+            </ul>
+
+            <h3>The Benefits of Engaging with DJs</h3>
+            <p>Connecting with our DJs offers a plethora of benefits. It gives you a behind-the-scenes look at their creative processes, insights into their favorite tracks, and personal stories that add depth to their on-air personalities. It also creates a sense of community, bringing together music lovers and artists in meaningful ways.</p>
+
+            <h3>Stay Tuned</h3>
+            <p>Keep an eye on our announcements about special events or DJ features, as we will be rolling out exciting ways to meet them virtually. As we continue to expand our interactive platform, we aim to create lasting connections between DJs and their audiences.</p>
+
+            <div class="dj-contact-buttons">
+                <a href="#" onclick="showContactModal()" class="contact-button">📧 Contact Our DJs</a>
+            </div>
+        </div>
+
+        <div class="booking-modal" id="bookingModal">
+            <span class="modal-close" onclick="closeBookingModal()">×</span>
+            <h2>Elevate Your Sound: Booking Opportunities at Fusion 2 Radio</h2>
+            <p>Are you an emerging artist, a seasoned musician, or part of a dynamic band looking to share your talent with a broader audience? Fusion 2 Radio offers an exciting platform for you to showcase your music, connect with fans, and engage with a vibrant community of artists.</p>
+
+            <h3>Why Book with Fusion 2 Radio?</h3>
+            <ul>
+                <li><strong>Reach a Broader Audience:</strong> With an expansive listener base, introduce your music to new fans and potential collaborators.</li>
+                <li><strong>Professional Setup:</strong> State-of-the-art broadcasting technology ensuring high-quality performance delivery.</li>
+                <li><strong>Supportive Community:</strong> Connect with our community of music lovers and gain promotional support.</li>
+                <li><strong>Interactivity:</strong> Engage with your audience in real time through our interactive format.</li>
+            </ul>
+
+            <h3>How to Book Your Spot</h3>
+            <p>Booking your performance is easy! Send an email to <a href="mailto:rockmoulds@gmail.com" style="color: #00ff00;">rockmoulds@gmail.com</a> with:</p>
+            <ul>
+                <li>Your Name/Band Name</li>
+                <li>Genre of Music</li>
+                <li>Social Media Links</li>
+                <li>Preferred Dates</li>
+                <li>Additional Requests</li>
+            </ul>
+
+            <h3>Join Our Community</h3>
+            <p>Don't miss out on the chance to elevate your sound and reach listeners far and wide. Send your booking request today, and let's create something magical together!</p>
+            
+            <a href="mailto:rockmoulds@gmail.com" class="contact-button" style="margin-top: 20px;">📧 Book Your Spot Now</a>
+        </div>
+
+        <div class="request-modal" id="requestModal">
+            <span class="modal-close" onclick="closeRequestModal()">×</span>
+            <h2>Unleashing Your Inner Rock Star: Song Requests at Fusion 2 Radio</h2>
+            <p>Music is an unparalleled force that transcends barriers—cultural, linguistic, and even emotional. At Fusion 2 Radio, we believe in the power of personalized music experiences through song requests.</p>
+
+            <h3>How to Request Your Favorite Songs</h3>
+            <p>Requesting songs is easy! Send an email to <a href="mailto:rockmoulds@gmail.com" style="color: #00ff00;">rockmoulds@gmail.com</a> with your request.</p>
+
+            <div style="background: rgba(0,255,0,0.1); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4 style="color: #00ff00;">Email Template:</h4>
+                <p><strong>Subject:</strong> Song Request - [Your Song Choice]</p>
+                <p><strong>Body:</strong></p>
+                <pre style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px;">
+Hello Fusion 2 Radio Team,
+
+I hope this message finds you well! I would love to request 
+the song "[Song Title]" by [Artist] for your upcoming playlist.
+
+This song holds a special place in my heart because [your story].
+
+Thank you for the great music you always curate!
+
+Best,
+[Your Name]</pre>
+            </div>
+
+            <h3>Why Request via Email?</h3>
+            <ul>
+                <li>Share the personal significance behind your song choice</li>
+                <li>Connect with our community of music lovers</li>
+                <li>Help shape our playlists</li>
+                <li>Contribute to our growing musical library</li>
+            </ul>
+
+            <h3>Community Engagement</h3>
+            <p>Your requests help create a vibrant community of music lovers. Selected requests may be featured in our broadcasts, newsletters, or special segments!</p>
+            
+            <a href="mailto:rockmoulds@gmail.com" class="contact-button" style="margin-top: 20px;">🎵 Send Your Request Now</a>
+        </div>
+
+        <div class="contact-modal" id="contactModal">
+            <span class="modal-close" onclick="closeContactModal()">×</span>
+            <h2>Contact Fusion 2 Radio</h2>
+            <div class="contact-content">
+                <p>We'd love to hear from you! Whether you want to:</p>
+                <ul>
+                    <li>Connect with our DJs</li>
+                    <li>Request a song</li>
+                    <li>Share your feedback</li>
+                    <li>Ask about opportunities</li>
+                </ul>
+                <p>You can reach us at:</p>
+                <div class="email-container">
+                    <a href="mailto:rockmoulds@gmail.com" class="email-link">📧 rockmoulds@gmail.com</a>
+                </div>
+                <p class="response-note">We aim to respond to all emails within 24-48 hours. Looking forward to connecting with you!</p>
+            </div>
+        </div>
+
+        <div class="join-modal" id="joinModal">
+            <span class="modal-close" onclick="closeJoinModal()">×</span>
+            <h2>Join the Fusion 2 Radio Team: Your Next Career Move Awaits! 🚀</h2>
+            
+            <p>Are you passionate about radio, music, and media? Do you dream of being part of a dynamic team that brings vibrant content to listeners? If so, Fusion 2 Radio might be the perfect place for you! We are currently on the lookout for enthusiastic individuals to join our growing team, and we'd love to hear from you.</p>
+
+            <h3>Why Fusion 2 Radio? 🎵</h3>
+            <p>At Fusion 2 Radio, we believe in the power of sound. We are dedicated to delivering a diverse range of programs that engage, entertain, and inform our audience. Our station is a hub for creativity, a platform where talented individuals can express themselves and connect with a wider community.</p>
+
+            <h3>Who are We Looking For? 🎙️</h3>
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li>• On-Air Presenters: Bring your unique voice and personality!</li>
+                <li>• Content Creators: Create engaging radio content</li>
+                <li>• Technical Support: Keep our sound quality top-notch</li>
+                <li>• Marketing and Promotions: Help us reach new listeners</li>
+            </ul>
+
+            <h3>How to Apply 📝</h3>
+            <p>Ready to take the plunge? Send your CV to <a href="mailto:rockmoulds@gmail.com" style="color: #ff4081;">rockmoulds@gmail.com</a>. Include a cover letter showcasing your passion for radio!</p>
+
+            <h3>Join Us in Shaping the Future of Radio 🌟</h3>
+            <p>Don't miss out on the opportunity to be part of something exciting! We believe everyone has a voice, and we want to amplify yours.</p>
+            
+            <a href="mailto:rockmoulds@gmail.com" class="join-button" style="margin-top: 20px;">📧 Apply Now</a>
+        </div>
+
+        <div class="laser-container">
+            <div class="laser"></div>
+            <div class="laser"></div>
+            <div class="laser"></div>
+            <div class="laser"></div>
+        </div>
+        <div class="glow"></div>
+
+        <script>
+            // Initialize speech synthesis
+            const synth = window.speechSynthesis;
+            let speaking = false;
+
+            // Function to convert emoji to spoken text
+            function emojiToText(text) {
+                return text
+                    .replace(/🎵/g, 'musical note')
+                    .replace(/🎤/g, 'microphone')
+                    .replace(/🎸/g, 'guitar')
+                    .replace(/🌏/g, 'globe')
+                    .replace(/🎧/g, 'headphones')
+                    .replace(/💫/g, 'sparkle')
+                    .replace(/🎺/g, 'trumpet')
+                    .replace(/🎶/g, 'musical notes');
+            }
+
+            function speak(text) {
+                // Stop any ongoing speech
+                if (speaking) {
+                    synth.cancel();
+                }
+                
+                // Add radio effects to the text
+                const radioIntros = [
+                    "Coming in live, ",
+                    "This is Fusion 2 Radio, ",
+                    "Hey there listener, ",
+                    "On the air now, ",
+                    "Broadcasting live, "
+                ];
+                
+                const intro = radioIntros[Math.floor(Math.random() * radioIntros.length)];
+                const enhancedText = intro + text;
+                
+                // Create new speech utterance
+                const utterance = new SpeechSynthesisUtterance(enhancedText);
+                
+                // Configure voice settings for more natural sound
+                utterance.rate = 0.9;  // Slightly slower for clarity
+                utterance.pitch = 0.9; // Slightly lower for radio feel
+                utterance.volume = 1.0;
+                
+                // Get available voices and select a good one
+                let voices = synth.getVoices();
+                utterance.onvoiceschanged = function() {
+                    voices = synth.getVoices();
+                };
+                
+                // Try to find a deep male English voice
+                const preferredVoice = voices.find(voice => 
+                    voice.lang.includes('en') && 
+                    (voice.name.toLowerCase().includes('male') || 
+                     voice.name.toLowerCase().includes('guy') ||
+                     voice.name.toLowerCase().includes('james') ||
+                     voice.name.toLowerCase().includes('david'))
+                ) || voices.find(voice => voice.lang.includes('en')) || voices[0];
+                
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+                
+                // Add speech effects
+                utterance.onboundary = function(event) {
+                    if (event.name === 'word') {
+                        // Adjust rate slightly for natural pauses
+                        utterance.rate = Math.random() * 0.1 + 0.85;
+                    }
+                };
+                
+                // Track speaking state
+                utterance.onstart = () => { speaking = true; };
+                utterance.onend = () => { speaking = false; };
+                
+                // Speak the text
+                synth.speak(utterance);
+            }
+
+            function toggleInfo() {
+                const infoContent = document.getElementById('infoContent');
+                infoContent.classList.toggle('show');
+            }
+
+            function showDJModal() {
+                document.getElementById('djModal').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+            }
+
+            function closeDJModal() {
+                document.getElementById('djModal').style.display = 'none';
+                document.getElementById('overlay').style.display = 'none';
+            }
+
+            function showBookingModal() {
+                document.getElementById('bookingModal').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+            }
+
+            function closeBookingModal() {
+                document.getElementById('bookingModal').style.display = 'none';
+                document.getElementById('overlay').style.display = 'none';
+            }
+
+            function showRequestModal() {
+                document.getElementById('requestModal').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+            }
+
+            function closeRequestModal() {
+                document.getElementById('requestModal').style.display = 'none';
+                document.getElementById('overlay').style.display = 'none';
+            }
+
+            function showJoinModal() {
+                document.getElementById('joinModal').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+            }
+
+            function closeJoinModal() {
+                document.getElementById('joinModal').style.display = 'none';
+                document.getElementById('overlay').style.display = 'none';
+            }
+
+            function showContactModal() {
+                document.getElementById('contactModal').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+            }
+
+            function closeContactModal() {
+                document.getElementById('contactModal').style.display = 'none';
+                document.getElementById('overlay').style.display = 'none';
+            }
+
+            let userName = '';
+            
+            function startChat() {
+                const nameInput = document.getElementById('user-name');
+                userName = nameInput.value.trim();
+                
+                if (userName) {
+                    document.getElementById('welcome-screen').style.display = 'none';
+                    document.getElementById('chat-interface').style.display = 'block';
+                    appendMessage("DJ", `Hey ${userName}! Welcome to Fusion 2 Radio! I'm your virtual DJ assistant. Feel free to ask me about our DJs, booking opportunities, or request songs!`);
+                } else {
+                    nameInput.style.border = '1px solid red';
+                }
+            }
+
+            // Add event listener for Enter key on name input
+            document.getElementById('user-name').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    startChat();
+                }
+            });
+
+            function appendMessage(sender, message) {
+                const display = document.getElementById('chatDisplay');
+                display.innerHTML += `<br>${sender}: ${message}`;
+                display.scrollTop = display.scrollHeight;
+                // Speak the message
+                speak(message);
+            }
+
+            function sendMessage() {
+                const input = document.getElementById('userInput');
+                const display = document.getElementById('chatDisplay');
+                const message = input.value.trim();
+                
+                if (message) {
+                    // Add user message
+                    display.innerHTML += `<br>${userName}: ${message}`;
+                    speak(`${userName} says: ${message}`);
+                    
+                    // Check message content
+                    const djKeywords = ['dj', 'djs', 'deejay', 'mixer', 'host'];
+                    const bookingKeywords = ['book', 'booking', 'perform', 'artist', 'band', 'play', 'gig', 'slot'];
+                    const requestKeywords = ['request', 'song request', 'play request', 'hear request'];
+                    const musicKeywords = ['music', 'genre', 'genres', 'songs', 'tracks', 'playlist', 'style', 'what do you play'];
+                    const aboutKeywords = ['about', 'what is', 'tell me about', 'fusion 2', 'fusion2', 'info', 'information'];
+                    const communityKeywords = ['community', 'events', 'interactive', 'collaborate', 'charity', 'participation'];
+                    const contactKeywords = ['contact', 'email', 'reach', 'connect', 'message', 'get in touch', 'talk to'];
+                    
+                    let response = '';
+                    
+                    if (contactKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+                        showContactModal();
+                        response = "Want to get in touch with us? Check out our contact information that just popped up!";
+                    } else if (aboutKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+                        const aboutResponses = [
+                            "Fusion 2 Radio is a live streaming music platform on Twitch that connects music lovers from around the world! 🌍 We feature a dynamic lineup of DJs, artists, and producers, serving as a hub for diverse genres from EDM to hip-hop and beyond. Want to learn more? Click the ℹ️ button above!",
+                            
+                            "We're more than just a radio station - we're a movement! 🎵 Fusion 2 Radio brings together music lovers on Twitch, offering real-time interaction with hosts, live video broadcasts, and an incredible range of music. Check out our full story by clicking the ℹ️ button!",
+                            
+                            "Welcome to the future of radio! 🚀 Fusion 2 Radio combines music, community, and interactivity on Twitch, creating an immersive digital gathering space. Want to know more about our mission? Just click the ℹ️ button above!"
+                        ];
+                        response = aboutResponses[Math.floor(Math.random() * aboutResponses.length)];
+                    } else if (communityKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+                        const communityResponses = [
+                            "Our community is what makes us special! 🤝 We host themed events, competitions, and collaborations with other Twitch streamers. Plus, we regularly work with charitable organizations to make a positive impact through music!",
+                            
+                            "At Fusion 2 Radio, we believe in the power of community! 🌟 From dance-offs to remix contests, charity streams to collaborative performances - there's always something exciting happening here!",
+                            
+                            "Community is at the heart of everything we do! 💫 We love bringing people together through interactive events, supporting local talent, and using our platform for positive change. Join us and be part of something special!"
+                        ];
+                        response = communityResponses[Math.floor(Math.random() * communityResponses.length)];
+                    } else if (musicKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+                        const musicResponses = [
+                            "🎵 We have an amazing variety of music! Here's what you can expect:\n\n" +
+                            "🎤 Contemporary Hits: Latest chart-toppers and emerging artists\n" +
+                            "🎸 Classic Rock: From Led Zeppelin to The Beatles\n" +
+                            "🌏 World Music: Global sounds including Afrobeat and Indian classical\n" +
+                            "🎧 Indie & Alternative: Fresh sounds from emerging artists\n" +
+                            "💫 Electronic & Dance: House, techno, trance, and dubstep\n" +
+                            "🎺 Soul & Jazz: From Motown classics to contemporary fusion",
+                            
+                            "Let me tell you about our music! We've got everything from contemporary hits to classic rock, world music to indie alternative, electronic dance to soul and jazz. Whatever your taste, we've got something that'll make you move! 🎵",
+                            
+                            "Our music selection is as diverse as our listeners! You'll hear the latest hits, timeless classics, global beats, indie gems, electronic bangers, and smooth jazz. It's all about variety at Fusion 2 Radio! 🎶"
+                        ];
+                        response = musicResponses[Math.floor(Math.random() * musicResponses.length)];
+                    } else if (djKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+                        showDJModal();
+                        response = "Want to know about our amazing DJs? Check out the info about DJ Micky, DJ iPro, and DJ Fusion that just popped up!";
+                    } else if (bookingKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+                        showBookingModal();
+                        response = "Interested in performing on Fusion 2 Radio? Check out our booking information that just popped up! You can also email us directly at rock moulds at gmail dot com";
+                    } else if (requestKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
+                        showRequestModal();
+                        response = "Want to request a song? We've got you covered! Check out our song request guide that just popped up, or email your request directly to rock moulds at gmail dot com";
+                    } else {
+                        // Regular radio responses with more natural, radio-style language
+                        const responses = [
+                            "You're locked in to Fusion 2 Radio! Keep those awesome requests coming in!",
+                            "Oh yeah, that's what I call good taste in music! Coming up next, more great tracks just for you!",
+                            "Fusion 2 Radio, where we keep the beats pumping non-stop, twenty-four seven!",
+                            "Thanks for hanging with us! Stay tuned, because we've got more amazing hits lined up just for you!",
+                            "You're vibing with Fusion 2 Radio - Your number one station for the freshest tracks!",
+                            "The energy is absolutely electric here at Fusion 2! Keep that groove going!",
+                            "This is Fusion 2 Radio, bringing you the ultimate soundtrack to your day!",
+                            "Love that enthusiasm! Your request is going straight to our platinum playlist!"
+                        ];
+                        
+                        response = responses[Math.floor(Math.random() * responses.length)];
+                    }
+                    
+                    // Add response after a short delay
+                    setTimeout(() => {
+                        appendMessage("DJ", response);
+                        // Convert emojis to spoken text and speak the response
+                        speak("Fusion 2 Radio says: " + emojiToText(response));
+                    }, 500);
+                    
+                    // Clear input
+                    input.value = '';
+                }
+            }
+        </script>
+    </body>
+</html>
